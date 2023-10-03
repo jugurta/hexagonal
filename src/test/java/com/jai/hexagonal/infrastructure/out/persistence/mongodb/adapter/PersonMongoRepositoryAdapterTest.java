@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.data.redis.core.ReactiveHashOperations;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -21,6 +22,7 @@ import static org.mockito.Mockito.when;
 class PersonMongoRepositoryAdapterTest {
     ReactivePersonMongoRepository reactiveMongoPersonRepository;
     PersonMongoMapper mongoPersonMapper;
+    ReactiveHashOperations<String, Long, PersonEntity> reactiveHashOperations;
     PersonMongoRepositoryAdapter personRepositoryAdapter;
 
 
@@ -28,7 +30,8 @@ class PersonMongoRepositoryAdapterTest {
     void setUp() {
         mongoPersonMapper = new PersonMongoMapperImpl();
         reactiveMongoPersonRepository = mock(ReactivePersonMongoRepository.class);
-        personRepositoryAdapter = new PersonMongoRepositoryAdapter(reactiveMongoPersonRepository, mongoPersonMapper);
+        reactiveHashOperations = mock(ReactiveHashOperations.class);
+        personRepositoryAdapter = new PersonMongoRepositoryAdapter(reactiveMongoPersonRepository, mongoPersonMapper, reactiveHashOperations);
     }
 
     @ParameterizedTest
@@ -36,6 +39,7 @@ class PersonMongoRepositoryAdapterTest {
     void givenPersonModelShouldSaveAndReturnPersonModel(Person person) {
         //GIVEN
         when(reactiveMongoPersonRepository.save(any(PersonEntity.class))).thenAnswer(invocationOnMock -> Mono.just(invocationOnMock.getArguments()[0]));
+        when(reactiveHashOperations.put(any(), anyLong(), any(PersonEntity.class))).thenReturn(Mono.just(Boolean.TRUE));
         //WHEN
         Mono<Person> result = personRepositoryAdapter.save(person);
         //THEN
@@ -50,6 +54,8 @@ class PersonMongoRepositoryAdapterTest {
     void givenIdentifierShouldReturnPersonModel(Person person, PersonEntity personEntity) {
         //GIVEN
         when(reactiveMongoPersonRepository.findById(anyLong())).thenAnswer(invocationOnMock -> Mono.just(personEntity));
+        when(reactiveHashOperations.get(any(), any())).thenAnswer(invocationOnMock -> Mono.empty());
+        when(reactiveHashOperations.put(any(), anyLong(), any(PersonEntity.class))).thenReturn(Mono.just(Boolean.TRUE));
         //WHEN
         Mono<Person> result = personRepositoryAdapter.findById(1L);
         //THEN

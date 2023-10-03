@@ -18,13 +18,12 @@ public class PersonController {
     private final PersonDTOMapper personDTOMapper;
 
     @PostMapping
-    Mono<PersonDTO> createPerson(@RequestBody PersonDTO personDTO) {
+    public Mono<PersonDTO> createPerson(@RequestBody PersonDTO personDTO) {
         return createPersonUseCase.createPerson(personDTOMapper.toDomain(personDTO)).map(personDTOMapper::toDTO);
     }
 
-
     @GetMapping(path = "{id}")
-    Mono<PersonDTO> fetchPerson(@PathVariable Long id) {
+    public Mono<PersonDTO> fetchPerson(@PathVariable Long id) {
         return fetchPersonUseCase.fetchById(id).map(personDTOMapper::toDTO);
     }
 }

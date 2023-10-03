@@ -5,7 +5,12 @@ spring:
     mongodb:
       database: ${DATABASE_NAME:personal-db}
       uri: ${DATABASE_URI:mongodb://test:test@localhost:27017/?retryWrites=true&w=majority}
+    redis:
+      connect-timeout: 2000
+      host: 127.0.0.1
+      port: 6379
   docker:
     compose:
       skip:
         in-tests: false
+

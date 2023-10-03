@@ -1,13 +1,18 @@
 version: '3.7'
 
 services:
+  redis:
+    image: redis:latest
+    container_name: redis-hexagonal
+    ports:
+      - "6379:6379"
   mongodb:
     image: mongo:latest
-    container_name: mongodb
+    container_name: mongodb-hexagonal
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: test
       MONGO_INITDB_ROOT_PASSWORD: test
       MONGO_INITDB_DATABASE: personal-db
     ports:
-      - 27017:27017
+      - "27017:27017"

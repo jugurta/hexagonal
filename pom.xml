@@ -16,6 +16,10 @@
     <properties>
         <java.version>17</java.version>
         <map-struct.version>1.5.5.Final</map-struct.version>
+        <jackson-version>2.15.2</jackson-version>
+        <pi-test-version>1.15.0</pi-test-version>
+        <pitest-junit5.version>1.2.0</pitest-junit5.version>
+        <jacoco-plugin-version>0.8.10</jacoco-plugin-version>
     </properties>
     <dependencies>
         <dependency>
@@ -25,6 +29,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb-reactive</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis-reactive</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -46,11 +54,16 @@
             <artifactId>mapstruct</artifactId>
             <version>${map-struct.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson-version}</version>
+        </dependency>
         <!-- Test Dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-docker-compose</artifactId>
-            <scope>test</scope>
+            <scope>verify</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -72,6 +85,7 @@
 
     <build>
         <plugins>
+            <!-- Maven compiler for annotation processing -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -96,6 +110,7 @@
                     </compilerArgs>
                 </configuration>
             </plugin>
+            <!-- Maven compiler to execute the unit tests of an application -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -103,8 +118,12 @@
                     <includes>
                         <include>**/*Test*.java</include>
                     </includes>
+                    <excludes>
+                        <exclude>**/*IT*.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
+            <!-- Spring Boot Maven Plugin provides Spring Boot support in Apache Maven -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -117,6 +136,69 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <!-- Pi test plugin for mutation tests -->
+            <plugin>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-maven</artifactId>
+                <version>${pi-test-version}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-junit5-plugin</artifactId>
+                        <version>${pitest-junit5.version}</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <targetClasses>
+                        <param>com.jai.hexagonal*</param>
+                    </targetClasses>
+                    <targetTests>
+                        <param>com.jai.hexagonal*</param>
+                    </targetTests>
+                    <excludedTestClasses>
+                        <param>com.jai.hexagonal.integration*</param>
+                    </excludedTestClasses>
+                </configuration>
+            </plugin>
+            <!-- Jacoco for code coverage plugin-->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco-plugin-version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.2.1</version>
+                <configuration>
+                    <includes>
+                        <include>**/*IT*.java</include>
+                    </includes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 
